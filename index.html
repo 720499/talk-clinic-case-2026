@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Реклама не чинит клинику</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --slate:#39445A; --slate-d:#242C3C; --bronze:#8A6F45; --bronze-l:#C7A97A;
+  --paper:#F7F6F3; --tint:#ECEAE4; --line:#DAD6CC;
+  --fg1:#1C2130; --fg2:#454D60; --fg3:#6E7385;
+  --good:#3E7D5C; --bad:#B4483F; --warn:#B07E33;
+  --font:"Montserrat",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:#0E1119;color:var(--fg1);overflow-x:hidden}
+
+/* ---------- КОЛОДА ---------- */
+#deck{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+.slide{height:100vh;width:100vw;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.stage{width:1280px;height:720px;background:var(--paper);transform-origin:center center;position:relative;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden}
+.stage.dark{background:var(--slate-d);color:#fff}
+
+.s-head{display:flex;align-items:center;justify-content:space-between;padding:30px 56px 0;flex:0 0 auto}
+.s-eyebrow{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);font-weight:700}
+.stage.dark .s-eyebrow{color:var(--bronze-l)}
+.s-stage-no{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);font-weight:600}
+.stage.dark .s-stage-no{color:rgba(255,255,255,.6)}
+.s-body{flex:1 1 auto;padding:22px 56px 0;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.s-foot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 56px 78px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+.stage.dark .s-foot{color:rgba(255,255,255,.5)}
+
+h1{font-size:60px;line-height:1.05;font-weight:800;letter-spacing:-.025em;margin-bottom:20px}
+h2{font-size:40px;line-height:1.12;font-weight:800;letter-spacing:-.018em;margin-bottom:24px}
+h2 .u{color:var(--bronze)}
+.stage.dark h2 .u{color:var(--bronze-l)}
+.lead{font-size:22px;line-height:1.45;color:var(--fg2);max-width:1050px}
+.stage.dark .lead{color:rgba(255,255,255,.85)}
+.lead + .lead{margin-top:14px}
+.tiny{font-size:14px;color:var(--fg3);line-height:1.45}
+.stage.dark .tiny{color:rgba(255,255,255,.62)}
+
+.kpis{display:grid;gap:20px;grid-template-columns:repeat(3,1fr)}
+.kpis.two{grid-template-columns:repeat(2,1fr)}
+.kpis.four{grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{background:var(--tint);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
+.stage.dark .kpi{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)}
+.kpi .v{font-size:52px;font-weight:800;color:var(--slate);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.kpis.four .kpi .v{font-size:40px}
+.stage.dark .kpi .v{color:var(--bronze-l)}
+.kpi .v.good{color:var(--good)} .kpi .v.bad{color:var(--bad)}
+.kpi .t{font-size:16px;font-weight:700;margin-top:12px;line-height:1.25}
+.stage.dark .kpi .t{color:#fff}
+.kpi .s{font-size:13px;color:var(--fg3);margin-top:7px;line-height:1.35}
+.stage.dark .kpi .s{color:rgba(255,255,255,.65)}
+
+ul.pts,ol.pts{list-style:none;display:flex;flex-direction:column;gap:13px}
+ul.pts li,ol.pts li{display:flex;gap:16px;align-items:flex-start;font-size:19px;line-height:1.38;color:var(--fg2)}
+.stage.dark ul.pts li,.stage.dark ol.pts li{color:rgba(255,255,255,.85)}
+ol.pts li .no{flex:0 0 34px;height:34px;border-radius:50%;background:var(--slate);color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:-2px}
+.stage.dark ol.pts li .no{background:var(--bronze-l);color:var(--slate-d)}
+ul.pts li .dot{flex:0 0 9px;height:9px;border-radius:50%;background:var(--bronze);margin-top:9px}
+.stage.dark ul.pts li .dot{background:var(--bronze-l)}
+li b{color:var(--fg1);font-weight:800}
+.stage.dark li b{color:#fff}
+
+/* связка действие → результат */
+.chain{display:grid;grid-template-columns:1fr 44px 1fr;gap:0 12px;align-items:stretch}
+.chain .box{background:var(--tint);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.chain .box.res{background:#fff;border-color:var(--bronze);border-width:2px}
+.chain .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);font-weight:700;margin-bottom:10px}
+.chain .arr{display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--bronze);font-weight:300}
+.chain p{font-size:17px;line-height:1.4;color:var(--fg2);margin-bottom:8px}
+.chain p:last-child{margin-bottom:0}
+.metric{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:16px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--slate)}
+.badge{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;padding:4px 10px;border-radius:99px;margin-left:8px;vertical-align:2px}
+.badge.ok{background:#E2EFE7;color:var(--good)}
+.badge.part{background:#F6EEDD;color:var(--warn)}
+.badge.no{background:#F7E5E3;color:var(--bad)}
+.badge.neg{background:#F7E5E3;color:var(--bad)}
+
+table{width:100%;border-collapse:collapse;font-size:16px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+thead th{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--fg3);font-weight:700}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700}
+.up{color:var(--good)} .down{color:var(--bad)}
+
+.quote{border-left:6px solid var(--bronze-l);padding-left:30px;font-size:28px;line-height:1.35;font-weight:600}
+.chartbox{height:340px;position:relative}
+
+/* ---------- НАВИГАЦИЯ ---------- */
+#nav{position:fixed;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.94);
+  border-radius:99px;padding:7px 9px;box-shadow:0 8px 26px rgba(0,0,0,.4);z-index:50;font-family:var(--font)}
+#nav button{border:0;background:var(--slate);color:#fff;width:34px;height:34px;border-radius:50%;font-size:19px;cursor:pointer;line-height:1}
+#nav button:hover{background:var(--bronze)}
+#nav button:focus-visible{outline:3px solid var(--bronze-l);outline-offset:2px}
+#counter{font-size:13px;font-weight:700;color:var(--fg2);min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+#modebtn{position:fixed;left:20px;bottom:20px;z-index:50;border:0;background:rgba(255,255,255,.94);color:var(--slate);
+  font-family:var(--font);font-size:13px;font-weight:700;padding:11px 18px;border-radius:99px;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.4)}
+#modebtn:hover{background:var(--bronze-l)}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:40;color:rgba(255,255,255,.5);font-size:12px;letter-spacing:.08em}
+@media (max-width:900px){#hint{display:none}}
+
+/* ---------- РЕЖИМ ДОКУМЕНТА ---------- */
+body.doc{background:var(--paper);overflow:auto}
+body.doc #deck{height:auto;overflow:visible;scroll-snap-type:none;max-width:1000px;margin:0 auto;padding:40px 24px 120px}
+body.doc .slide{height:auto;width:auto;display:block;margin-bottom:34px}
+body.doc .stage{width:100%;height:auto;min-height:0;transform:none!important;box-shadow:0 1px 3px rgba(0,0,0,.10);border:1px solid var(--line);border-radius:12px}
+body.doc .s-body{padding:16px 34px 26px;justify-content:flex-start}
+body.doc .s-head{padding:22px 34px 0}
+body.doc .s-foot{padding:0 34px 20px}
+body.doc h1{font-size:38px} body.doc h2{font-size:27px}
+body.doc .lead{font-size:17px} body.doc .kpi .v{font-size:34px}
+body.doc .chartbox{height:280px}
+body.doc #hint{display:none}
+@media print{body{background:#fff}#nav,#modebtn,#hint{display:none}.slide{page-break-after:always}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide"><div class="stage dark">
+  <div class="s-head"><span class="s-eyebrow">Штрауман групп · закрытая встреча · Москва</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h1>Реклама не чинит клинику</h1>
+        <p class="lead">Год управления купленной клиникой: шесть кресел, что мы делали по месяцам и что из этого дало деньги.</p>
+        <p class="lead" style="margin-top:26px"><b>Реклама не чинит клинику. Она показывает, где клиника ломается — и делает это за ваши деньги.</b></p></div>
+  <div class="s-foot"><span>Владимир Сивергин · управляющий партнёр</span><span>1 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Содержание</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h2>Как построен разбор</h2><ol class="pts"><li><span class="no">1</span><span><b>Как клиника досталась</b> — лето — сентябрь 2025</span></li><li><span class="no">2</span><span><b>Две задачи первого квартала</b> — октябрь — декабрь 2025</span></li><li><span class="no">3</span><span><b>Ремонт, который не добавлял мощности</b> — октябрь — декабрь 2025</span></li><li><span class="no">4</span><span><b>Миллион в трафик</b> — октябрь — ноябрь 2025</span></li><li><span class="no">5</span><span><b>Слив едет вниз по воронке</b> — ноябрь 2025 — февраль 2026</span></li><li><span class="no">6</span><span><b>Пересобрали отдел продаж</b> — декабрь 2025 — весна 2026</span></li><li><span class="no">7</span><span><b>Обвал первички и разворот на базу</b> — февраль 2026</span></li><li><span class="no">8</span><span><b>Платим за поведение, а не за выработку</b> — июль 2026</span></li><li><span class="no">9</span><span><b>Где мы сейчас</b> — август 2026</span></li></ol></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>2 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Тезисы</span><span class="s-stage-no">тезис 1 из 5</span></div>
+  <div class="s-body"><h2>Тезис 1. <span class="u">Слив едет вниз по воронке</span></h2>
+            <div class="kpis two">
+              <div class="kpi"><div class="t">Чем подтверждён</div><div class="s" style="font-size:15px;margin-top:10px">Вложили около миллиона в трафик. Заявки пошли — слив на колл-центре. Докрутили колл-центр, доходимость подросла — слив переехал на врачей и кураторов, не обученных комплексным планам. В апреле 40 первичных обращений вообще потерялись на недозвоне: в мае 5, в июне 0.</div></div>
+              <div class="kpi"><div class="t">Зачем это сети</div><div class="s" style="font-size:15px;margin-top:10px">Чем больше бюджет, тем дороже нерасшитый последний этап. У сети он стоит не сотни тысяч, а миллионы в месяц.</div></div>
+            </div></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>3 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Тезисы</span><span class="s-stage-no">тезис 2 из 5</span></div>
+  <div class="s-body"><h2>Тезис 2. <span class="u">Не надо переучивать всех. Хватит одной связки</span></h2>
+            <div class="kpis two">
+              <div class="kpi"><div class="t">Чем подтверждён</div><div class="s" style="font-size:15px;margin-top:10px">Врачи сопротивлялись: «мы ничего не продаём, мы лечим». Мы не стали ломать всех — обучили одну связку хирург плюс ортопед, работающую по структуре, и записывали на неё первичных из рекламы. Разброс нормо-часа между врачами и так 4,7 раза: от 3 973 до 18 902 ₽ за час.</div></div>
+              <div class="kpi"><div class="t">Зачем это сети</div><div class="s" style="font-size:15px;margin-top:10px">В сети переучивание всех врачей стоит года. Одна показательная связка на филиал даёт результат за квартал, а остальные подтягиваются сами.</div></div>
+            </div></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>4 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Тезисы</span><span class="s-stage-no">тезис 3 из 5</span></div>
+  <div class="s-body"><h2>Тезис 3. <span class="u">Самый дешёвый рубль в клинике лежит не в рекламном кабинете</span></h2>
+            <div class="kpis two">
+              <div class="kpi"><div class="t">Чем подтверждён</div><div class="s" style="font-size:15px;margin-top:10px">Переход на нулевую ставку дал экономию 4% от выручки: 351 тыс. ₽ в месяц, 2,76 млн за восемь месяцев — это 41% всего маркетингового бюджета. Плюс 103 согласованных плана лечения на 10,69 млн, по которым лечение не начато.</div></div>
+              <div class="kpi"><div class="t">Зачем это сети</div><div class="s" style="font-size:15px;margin-top:10px">Это деньги, которые не требуют ни одного нового пациента. В сети они масштабируются на каждый филиал.</div></div>
+            </div></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>5 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Тезисы</span><span class="s-stage-no">тезис 4 из 5</span></div>
+  <div class="s-body"><h2>Тезис 4. <span class="u">Рост делается ценой часа, а не количеством часов</span></h2>
+            <div class="kpis two">
+              <div class="kpi"><div class="t">Чем подтверждён</div><div class="s" style="font-size:15px;margin-top:10px">Выручка +22% к прошлому году при открытом графике −6%: 1 288 → 1 207 часов в месяц. Кресел не добавляли — их было шесть и осталось шесть.</div></div>
+              <div class="kpi"><div class="t">Зачем это сети</div><div class="s" style="font-size:15px;margin-top:10px">Прежде чем строить новый филиал, посмотрите, сколько стоит час в существующем. Там обычно дешевле.</div></div>
+            </div></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>6 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Тезисы</span><span class="s-stage-no">тезис 5 из 5</span></div>
+  <div class="s-body"><h2>Тезис 5. <span class="u">Врач прав, когда говорит «я не продаю, я лечу»</span></h2>
+            <div class="kpis two">
+              <div class="kpi"><div class="t">Чем подтверждён</div><div class="s" style="font-size:15px;margin-top:10px">Продаёт не врач, а структура приёма и куратор. Кураторов пришлось искать заново под портрет — действующие не умели вести комплексный план. С июля платим врачу за поведение, а не только за выработку: ФОТ врачей 26,3% от выработки против до 50% на входе, при этом надбавки дали им +23,3% к начислению.</div></div>
+              <div class="kpi"><div class="t">Зачем это сети</div><div class="s" style="font-size:15px;margin-top:10px">Спор «врач должен продавать» не выигрывается. Выигрывается перенос продажи на роль, которая для этого создана.</div></div>
+            </div></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>7 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage dark">
+  <div class="s-head"><span class="s-eyebrow">Часть 1</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h1>Хронология</h1><p class="lead">Девять этапов за год. По каждому: что сделали, что от этого сдвинулось и честная пометка — доказуемо это цифрами или нет.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>8 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">лето — сентябрь 2025</span><span class="s-stage-no">этап 1</span></div>
+  <div class="s-body"><h2>Как клиника досталась <span class="badge ok">подтверждено</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Собственник — врач-хирург — перевёл врачей на белую оплату, оставив прежние проценты: до 50% от выработки</p><p>— За четыре месяца подушка съедена зарплатами и налогами, пошли кассовые разрывы</p><p>— Врачи поняли, что можно брать отпуска и больничные, мало вырабатывать и нормально получать</p><p>— Выкуп части доли, оперативное управление переходит к управляющей компании</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Клиника прибыльная по выручке и убыточная по модели. Обеление без пересборки процентов убивает клинику за четыре месяца.</p>
+                <div class="metric">Штат ~35 человек · 9 млн незакрытых документов в 1С за три года · оборудование в рассрочку 280 тыс. ₽/мес</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Переход в белую — не бухгалтерское действие. Не пересобрали проценты — потеряли клинику.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>9 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">октябрь — декабрь 2025</span><span class="s-stage-no">этап 2</span></div>
+  <div class="s-body"><h2>Две задачи первого квартала <span class="badge ok">подтверждено</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Первая: откатить зарплатные налоги, остановить кровотечение — процент врачам с уровня до 50% опущен к 14% в белой части</p><p>— Вторая: укомплектовать медицинский персонал, чтобы выйти на нулевую ставку налога на прибыль</p><p>— Условия льготы нужно держать непрерывно весь год: не менее 15 работников и не менее 50% медперсонала с сертификатом</p><p>— Одновременно шли ремонт и реформы, врачи были недовольны, часть уходила</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Порог удержали, с января клиника на нулевой ставке. Кадровая работа квартала была не «поиском людей», а удержанием льготы.</p>
+                <div class="metric">Экономия на налогах после перехода — 4% от выручки: 351 тыс. ₽/мес, около 4,2 млн ₽ в год</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Один провал численности в любом месяце обнуляет льготу за весь год. Это делает кадровые решения вопросом не HR, а финансов.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>10 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">октябрь — декабрь 2025</span><span class="s-stage-no">этап 3</span></div>
+  <div class="s-body"><h2>Ремонт, который не добавлял мощности <span class="badge part">не отделим</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Замена трёх изношенных установок на новые Siger U200 — 1,275 млн ₽</p><p>— Кондиционирование 280 тыс. ₽, вентиляция, мебель, покраска</p><p>— Кресел было шесть и осталось шесть</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Это поддерживающая инвестиция, а не расширение. Расписание упирается в число кресел, поэтому прироста часов от неё ждать было нельзя изначально.</p>
+                <div class="metric">Открытый график 2025 → 2026: 1 288 → 1 207 ч/мес. Рентабельность квартала с реинвестициями: −45%</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Поддерживающий капекс нельзя мерить приростом выручки. Его меряют простоями, ценой часа и удержанием врачей — и это надо решить до того, как подписан счёт.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>11 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">октябрь — ноябрь 2025</span><span class="s-stage-no">этап 4</span></div>
+  <div class="s-body"><h2>Миллион в трафик <span class="badge ok">подтверждено</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Вложили около миллиона рублей в трафик</p><p>— Разделили на два канала: РСЯ и таргет ВКонтакте</p><p>— Параллельно запустили колл-центр с нуля — два дня обучения</p><p>— Офферы: диагностика с КТ 1 500 ₽ вместо 3 600, с декабря бесплатная консультация всех врачей</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Заявки пошли. Дальше выяснилось, что проблема не в их количестве.</p>
+                <div class="metric">Маркетинг октябрь + ноябрь 2025: 1 124 106 ₽ по управленческому учёту</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Трафик — самая быстрая часть работы и самая дешёвая для проверки гипотезы. Он же самый бесполезный, если дальше по цепочке никто не готов.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>12 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">ноябрь 2025 — февраль 2026</span><span class="s-stage-no">этап 5</span></div>
+  <div class="s-body"><h2>Слив едет вниз по воронке <span class="badge part">частично</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Сначала сливал колл-центр: шаблонные ответы, без диалога и работы с возражением</p><p>— Докрутили колл-центр — доходимость подросла</p><p>— И тогда сливать начали врачи и действующие кураторы: они не были обучены работать по комплексным планам лечения</p><p>— Врачи сопротивлялись изменениям: «мы ничего не продаём, мы только лечим»</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Стало видно, что рекламный бюджет оплачивает не привлечение, а необученность последнего этапа.</p>
+                <div class="metric">Из 665 планов лечения на 93,18 млн завершено 58 — это 0,8% по сумме. Согласовано, но не начато — 103 плана на 10,69 млн</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Чините воронку снизу вверх. Пока не закрыт последний этап, каждый вложенный в рекламу рубль оплачивает чужую неготовность.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>13 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">декабрь 2025 — весна 2026</span><span class="s-stage-no">этап 6</span></div>
+  <div class="s-body"><h2>Пересобрали отдел продаж <span class="badge part">частично</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Решение: не сливать бюджеты дальше, а пересобрать команду продаж</p><p>— Ввели тренера по продажам</p><p>— Стали искать новых кураторов под свой портрет и запросы, а не доучивать действующих</p><p>— Сделали ставку на одну связку — хирург плюс ортопед, работающие по структуре</p><p>— На эту связку записывали первичных пациентов из рекламных бюджетов</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Появилась точка, где рекламный пациент доходит до комплексного плана. Дальше эту связку показываем как пример остальным — такой опыт у нас уже был раньше, и остальные подтягиваются.</p>
+                <div class="metric">Недозвоны без перезвона: апрель 40 → май 5 → июнь 0. Разброс нормо-часа между врачами 4,7 раза</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Не воюйте со всем коллективом. Соберите одну работающую связку, посадите на неё платный трафик и покажите её результат остальным.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>14 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">февраль 2026</span><span class="s-stage-no">этап 7</span></div>
+  <div class="s-body"><h2>Обвал первички и разворот на базу <span class="badge part">частично</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Первичные обращения упали на четверть, и это было не только у нас — платные каналы просели по всему портфелю</p><p>— Подняли старую базу, которую до этого отключали как «лишние 20 тысяч в месяц»</p><p>— Начислили бонусы всей базе по умолчанию и разослали: «у вас на счету уже есть бонусы»</p><p>— Мотивация администраторов: за регистрацию пациента в боте, за отзыв, за рекомендацию</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Вторая половина февраля вытянута записью из базы. Врачи загружены, зарплаты получены.</p>
+                <div class="metric">Обращения 272 → 208, оплатили 100 → 57. Рассылка 24 февраля: 104 обращения, 25 записей, рекламный бюджет 0 ₽</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Повод для звонка важнее скидки. Не «приходите полечиться», а «у вас лежат деньги» — это разный разговор.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>15 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">июль 2026</span><span class="s-stage-no">этап 8</span></div>
+  <div class="s-body"><h2>Платим за поведение, а не за выработку <span class="badge part">частично</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Ввели грейды: база плюс надбавка за качество до 4 п.п. и за эксклюзивность до 3 п.п.</p><p>— Премиальный фонд считается за вычетом скидки, которую врач выдал лично</p><p>— Ортодонтов вывели в отдельную формулу</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Врачи не потеряли в деньгах, но платить стали за поведение. Скидка перестала быть бесплатной для того, кто её даёт.</p>
+                <div class="metric">ФОТ врачей 26,3% от выработки против до 50% на входе, при этом надбавки дали им +23,3% к начислению</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Скидки по личной инициативе врачей — 36% всех скидок клиники, разброс дисциплины между врачами десятикратный. Пока это не считается, бороться не с чем.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>16 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">август 2026</span><span class="s-stage-no">этап 9</span></div>
+  <div class="s-body"><h2>Где мы сейчас <span class="badge ok">подтверждено</span></h2>
+            <div class="chain">
+              <div class="box"><div class="lbl">Что сделали</div><p>— Карты через аукцион Директа — лучший канал портфеля по цене дошедшего пациента</p><p>— Машина отзывов работает на самоокупаемости администраторов</p><p>— ВКонтакте выключен, бюджет перераспределён</p><p>— Идут три живых теста: ставка против качества заявки, место в аукционе медпортала, смена системы имплантов</p></div>
+              <div class="arr">→</div>
+              <div class="box res"><div class="lbl">Что сдвинулось</div><p>Август закрывается на уровне рекордного июля при графике, сжатом на 14%. День стал дороже.</p>
+                <div class="metric">Средний рабочий день августа 351 220 ₽ — лучший в году (июнь 302 467, июль 340 657). Прогноз месяца ≈9,1 млн</div></div>
+            </div>
+            <p class="lead" style="margin-top:22px"><b>Что переносимо:</b> Когда час дорожает, заполнять пустой час выгоднее, чем покупать нового пациента.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>17 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Результат</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h2>Выставленные счета по месяцам, млн ₽</h2>
+        <div class="chartbox"><canvas id="chartRev"></canvas></div>
+        <p class="tiny" style="margin-top:14px">Управленческий учёт, выставленные счета. Апрель — рекорд года. Август светлым — прогноз закрытия по фактическим 25 дням месяца. Для сравнения: август 2025 — 5,58 млн ₽.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>18 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Результат</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h2>Год в цифрах</h2><div class="kpis four"><div class="kpi"><div class="v good">+22%</div><div class="t">выручка к прошлому году</div><div class="s">6,68 → 8,2 млн ₽ в месяц</div></div><div class="kpi"><div class="v good">+22%</div><div class="t">цена часа врача</div><div class="s">7 300 → 8 950 ₽ за час</div></div><div class="kpi"><div class="v bad">−6%</div><div class="t">открытый график</div><div class="s">1 288 → 1 207 часов в месяц</div></div><div class="kpi"><div class="v good">4%</div><div class="t">экономия на налогах</div><div class="s">351 тыс. ₽/мес — 41% маркетингового бюджета</div></div><div class="kpi"><div class="v ">26,3%</div><div class="t">ФОТ врачей от выработки</div><div class="s">на входе было до 50%</div></div><div class="kpi"><div class="v good">+64%</div><div class="t">август к августу 2025</div><div class="s">5,58 → ≈9,1 млн ₽</div></div></div></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>19 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Честная часть</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h2>Что <span class="u">не сработало</span></h2><ul class="pts"><li><span class="dot"></span><span>Агентство с квиз-лендингом: 323 заявки, 19 дошли, 3 начали лечение. Потрачено 760 тыс. ₽, выручка 540 тыс. ₽, ROMI минус 29%. Пациент оставлял телефон, чтобы открылся расчёт плана, а не чтобы записаться.</span></li><li><span class="dot"></span><span>Ремонт и маркетинг одновременно: клиника закрывалась на полные дни, врачи оставались без кабинетов, а трафик уже шёл и оплачивался.</span></li><li><span class="dot"></span><span>Фотосессия до стабилизации кадров: через месяц уволилась главный врач, около 80% кадров стали непригодны.</span></li><li><span class="dot"></span><span>Март: маркетинг 1,54 млн — пик года, рентабельность 0,8% — минимум года.</span></li><li><span class="dot"></span><span>Имплантация в штуках просела на 42%: 44,8 → 26,0 установок в месяц. Деньги удержал средний чек, но объём направления сжался.</span></li><li><span class="dot"></span><span>Первая попытка живого видеопродакшна: пасмурная погода, удалённый продюсер, врачи не отвечают на распаковку — три недели на первую съёмку.</span></li></ul></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>20 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage dark">
+  <div class="s-head"><span class="s-eyebrow">Переход</span><span class="s-stage-no"></span></div>
+  <div class="s-body"><h2>Что дальше — во второй части</h2><p class="lead">Из первой части следует, что врач — самое узкое место всего, что требует его времени: и продажи, и контента. Во второй части покажу, как мы вынули врача из производства контента и что стало с себестоимостью ролика, а также как устроена управляющая компания на клинике втрое больше этой.</p></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>21 / 22</span></div>
+</div></section>
+<section class="slide"><div class="stage">
+  <div class="s-head"><span class="s-eyebrow">Рабочее</span><span class="s-stage-no">не показывать в зале</span></div>
+  <div class="s-body"><h2>Решить до выступления</h2><ol class="pts"><li><span class="no">1</span><span>Регламент и дата выступления — от них зависит, что режется</span></li><li><span class="no">2</span><span>Финальные цифры августа снять 1 сентября: сейчас прогноз по 25 дням</span></li><li><span class="no">3</span><span>Решение по офферу «бесплатное удаление» — если запустим до доклада, это сильный живой сюжет</span></li><li><span class="no">4</span><span>Называем ли ДентАРИЗ во второй части: зал закрытый, там могут быть прямые конкуренты по Казани</span></li><li><span class="no">5</span><span>Согласовать с партнёром показ обезличенных цифр клиники</span></li></ol></div>
+  <div class="s-foot"><span>Кейс клиники, 6 кресел · первая часть выступления</span><span>22 / 22</span></div>
+</div></section>
+</div>
+<div id="nav">
+  <button id="prev" title="Назад">‹</button><span id="counter">1 / 22</span><button id="next" title="Вперёд">›</button>
+</div>
+<button id="modebtn">Режим документа</button>
+<div id="hint">← → навигация · F полный экран · слева — режим документа для чтения и правок</div>
+<script>
+(function(){
+  var deck=document.getElementById('deck');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var counter=document.getElementById('counter');
+  var current=0, docMode=false;
+
+  function scaleStages(){
+    if(docMode) return;
+    var s=Math.min(window.innerWidth/1280,(window.innerHeight-0)/720);
+    document.querySelectorAll('.stage').forEach(function(el){el.style.transform='scale('+s+')';});
+  }
+  window.addEventListener('resize',scaleStages);
+  window.addEventListener('load',scaleStages);
+  scaleStages();
+
+  function update(){
+    if(docMode) return;
+    var i=Math.round(deck.scrollTop/window.innerHeight);
+    i=Math.max(0,Math.min(slides.length-1,i));
+    current=i; counter.textContent=(i+1)+' / '+slides.length;
+  }
+  function go(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    current=i; slides[i].scrollIntoView({behavior:'smooth'});
+    counter.textContent=(i+1)+' / '+slides.length;
+  }
+  document.getElementById('next').addEventListener('click',function(){go(current+1)});
+  document.getElementById('prev').addEventListener('click',function(){go(current-1)});
+  deck.addEventListener('scroll',function(){clearTimeout(deck._t);deck._t=setTimeout(update,60)});
+
+  document.getElementById('modebtn').addEventListener('click',function(){
+    docMode=!docMode;
+    document.body.classList.toggle('doc',docMode);
+    this.textContent=docMode?'Режим колоды':'Режим документа';
+    document.getElementById('nav').style.display=docMode?'none':'flex';
+    if(!docMode){scaleStages();go(current);}
+    else{document.querySelectorAll('.stage').forEach(function(el){el.style.transform='none'});window.scrollTo(0,0);}
+    try{localStorage.setItem('talkmode',docMode?'doc':'deck')}catch(e){}
+  });
+  try{ if(localStorage.getItem('talkmode')==='doc'){document.getElementById('modebtn').click();} }catch(e){}
+
+  document.addEventListener('keydown',function(e){
+    if(docMode) return;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();go(current+1)}
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();go(current-1)}
+    else if(e.key==='Home'){e.preventDefault();go(0)}
+    else if(e.key==='End'){e.preventDefault();go(slides.length-1)}
+    else if(e.key==='f'||e.key==='F'){e.preventDefault();
+      if(!document.fullscreenElement){document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+  });
+})();
+</script>
+
+<script>
+(function(){
+  function init(){
+    if(typeof Chart==='undefined') return;
+    var c=document.getElementById('chartRev'); if(!c) return;
+    var box=c.parentElement;
+    c.width=box.clientWidth; c.height=box.clientHeight;
+    new Chart(c,{type:'bar',
+      data:{labels:["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг"],
+        datasets:[{data:[8.64, 8.05, 8.23, 10.17, 7.58, 9.65, 9.2, 9.13],
+          backgroundColor:["#39445A", "#39445A", "#39445A", "#8A6F45", "#39445A", "#39445A", "#39445A", "#C7A97A"],borderRadius:6,maxBarThickness:64}]},
+      options:{responsive:false,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{enabled:true}},
+        scales:{x:{grid:{display:false},ticks:{color:'#6E7385',font:{size:12}}},
+                y:{grid:{color:'#DAD6CC'},ticks:{color:'#6E7385',font:{size:12}}}}}});
+  }
+  if(document.readyState==='complete'){init()}else{window.addEventListener('load',init)}
+})();
+</script>
+</body>
+</html>
