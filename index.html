@@ -2352,6 +2352,29 @@ body.fit .stage { transform-origin:top center; transform:scale(var(--fit,1)); }
   });
   // Click to set focus
   slides.forEach(function(s,i){ s.addEventListener('click', function(){ cur=i; }); });
+
+  // Автовоспроизведение видео на слайде.
+  // Атрибута autoplay мало: браузер не запускает ролик, пока слайд далеко от экрана,
+  // а к моменту показа видео либо стоит на первом кадре, либо уже отыграло вхолостую.
+  // Поэтому следим за видимостью: слайд появился — ролик начинается с начала,
+  // ушёл — ставится на паузу, чтобы звук и кадр не жили за спиной у докладчика.
+  var ролики = Array.from(document.querySelectorAll('video'));
+  ролики.forEach(function(v){ v.muted = true; v.setAttribute('playsinline',''); });
+  if ('IntersectionObserver' in window) {
+    var наблюдатель = new IntersectionObserver(function(записи){
+      записи.forEach(function(з){
+        var v = з.target;
+        if (з.isIntersecting) {
+          if (v.paused) { try { v.currentTime = 0; } catch(e){} v.play().catch(function(){}); }
+        } else if (!v.paused) {
+          v.pause();
+        }
+      });
+    }, {threshold: 0.45});
+    ролики.forEach(function(v){ наблюдатель.observe(v); });
+  } else {
+    ролики.forEach(function(v){ v.play().catch(function(){}); });
+  }
 })();
 </script>
 </body>
